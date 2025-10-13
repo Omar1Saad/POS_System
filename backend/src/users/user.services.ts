@@ -73,14 +73,14 @@ export class UserService {
   private async validateUniqueFields(id: number, username?: string, email?: string): Promise<void> {
     if (username) {
       const userExists = await this.userRepository.findOne({ where: { username } });
-      if (userExists && userExists.id !== id) {
+      if (userExists && userExists.id !== +id) {
         throw new BadRequestException('Username already exists');
       }
     }
     
     if (email) {
       const emailExists = await this.userRepository.findOne({ where: { email } });
-      if (emailExists && emailExists.id !== id) {
+      if (emailExists && emailExists.id !== +id) {
         throw new BadRequestException('Email already exists');
       }
     }

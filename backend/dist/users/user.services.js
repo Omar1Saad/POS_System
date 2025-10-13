@@ -110,13 +110,13 @@ let UserService = class UserService {
     async validateUniqueFields(id, username, email) {
         if (username) {
             const userExists = await this.userRepository.findOne({ where: { username } });
-            if (userExists && userExists.id !== id) {
+            if (userExists && userExists.id !== +id) {
                 throw new common_1.BadRequestException('Username already exists');
             }
         }
         if (email) {
             const emailExists = await this.userRepository.findOne({ where: { email } });
-            if (emailExists && emailExists.id !== id) {
+            if (emailExists && emailExists.id !== +id) {
                 throw new common_1.BadRequestException('Email already exists');
             }
         }

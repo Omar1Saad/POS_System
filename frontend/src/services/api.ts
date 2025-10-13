@@ -30,7 +30,6 @@ api.interceptors.response.use(
     return response;
   },
   (error: AxiosError) => {
-    // console.log('❌ API Error:', error.response?.status, error.config?.url, error.response?.data?.message);
     if(error.response?.status === 400){
       return error.response;
     }

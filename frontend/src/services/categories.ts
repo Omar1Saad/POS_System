@@ -48,7 +48,6 @@ export const categoryService = {
 
   create: async (categoryData: CreateCategory):Promise<ApiResponse<Category>> => {
     const res = await api.post(`/categories`, categoryData);
-    console.log(res.status)
     if(res.status < 200 || res.status >299){
       return {data:null ,message: res.data.message, success: false};
     }

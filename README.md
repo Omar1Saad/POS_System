@@ -221,7 +221,7 @@ pos-system/
 ## 👨‍💻 المطور
 
 ### [عمر سعد]
-- **GitHub**: [@yourusername](https://github.com/Omar1Saad)
+- **GitHub**: [@Omar1Saad](https://github.com/Omar1Saad)
 - **البريد الإلكتروني**: froomomer66@gmail.com
 - **LinkedIn**: [رابط LinkedIn](https://linkedin.com/in/yourprofile)
 

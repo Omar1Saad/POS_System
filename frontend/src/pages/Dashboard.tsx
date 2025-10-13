@@ -119,12 +119,10 @@ const Dashboard: React.FC = () => {
     const fetchDashboardData = async () => {
       // Only fetch data if user is authenticated and token is available
       if (!user || !token) {
-        console.log('⏳ Dashboard: Waiting for authentication...');
         return;
       }
 
       try {
-        console.log('📊 Dashboard: Fetching dashboard data...');
         setLoading(true);
         
         // Fetch basic dashboard data
@@ -145,15 +143,12 @@ const Dashboard: React.FC = () => {
             setProfitOverTime(profitOverTimeData);
             setTopProducts(topProductsData);
           } catch (analyticsError) {
-            console.error('❌ Dashboard: Error fetching analytics data:', analyticsError);
           } finally {
             setAnalyticsLoading(false);
           }
         }
         
-        console.log('✅ Dashboard: Data loaded successfully');
       } catch (error) {
-        console.error('❌ Dashboard: Error fetching dashboard data:', error);
         // Fallback to empty data if API fails
         setDashboardData({
           totalSales: 0,

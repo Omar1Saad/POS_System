@@ -38,7 +38,6 @@ export const saleService = {
       user: sale.user,
       customer: sale.customer,
     })) as Sale[];
-    console.log(sales);
     return {
       data: sales,
       total: res.data.total,

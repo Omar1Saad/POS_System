@@ -62,7 +62,6 @@ export const supplierService = {
   // Update supplier (MOCK)
   update: async (id: number, supplierData: Partial<CreateSupplier>): Promise<ApiResponse<Supplier>> => {
     const res = await api.patch(`suppliers/${id}`, supplierData);
-    console.log(res.data)
     if (res.status !== 200) {
       return { data: null, success: false, message: res.data.message };
     }

@@ -66,7 +66,6 @@ const Products: React.FC = () => {
       setLoading(true);
       const response = await productService.getAll(page + 1, pageSize, searchTerm);
       if(!response.data || response.data.length === 0) {
-        console.log(response.data)
         throw new Error(response.message||'sds');
       }
       setProducts(response.data);
@@ -133,7 +132,6 @@ const Products: React.FC = () => {
         const percentage = Number(initialData.profitPercentage) || 25;
         const calculatedPrice = Math.round((cost + (cost * percentage / 100)) * 100) / 100;
         initialData.price = calculatedPrice;
-        console.log('Initial calculated price for edit:', calculatedPrice);
       }
 
       setFormData(initialData);
@@ -169,7 +167,6 @@ const Products: React.FC = () => {
         const percentage = Number(newData.profitPercentage) || 25;
         const calculatedPrice = Math.round((cost + (cost * percentage / 100)) * 100) / 100;
         newData.price = calculatedPrice;
-        console.log('Auto-calculated price:', calculatedPrice, 'from cost:', cost, 'profit%:', percentage);
       }
 
       return newData;
@@ -181,14 +178,12 @@ const Products: React.FC = () => {
       // Prepare form data for submission
       const submitData = { ...formData };
       
-      console.log('Frontend: Original form data:', formData);
       
       // If average cost is provided, don't send manual price - let backend calculate it
       if (submitData.averageCost > 0) {
         delete submitData.price;
       }
       
-      console.log('Frontend: Sending data:', submitData);
       
       if (dialogMode === 'create') {
         const res = await productService.create(submitData);

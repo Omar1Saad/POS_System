@@ -68,7 +68,6 @@ export const customerService = {
   // Update customer
   update: async (id: number, customerData: Partial<CreateCustomer>): Promise<ApiResponse<Customer>> => {
    const res = await api.patch(`customer/${id}`, customerData);
-   console.log(res.data.message)
     if (res.status !== 200) {
       return { data: null, success: false, message: res.data.message };
     }
