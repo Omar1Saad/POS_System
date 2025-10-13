@@ -11,24 +11,15 @@
 
 ### 🖥️ واجهة البيع الرئيسية
 <!-- TODO: إضافة صورة لواجهة البيع -->
-```
 <img width="1867" height="907" alt="Screenshot 2025-10-13 at 14-09-04 POS System - Point of Sale" src="https://github.com/user-attachments/assets/367987f1-cac3-49f0-8ee0-75b0d38f45bc" />
 
-```
 
 ### 📦 صفحة إدارة المنتجات
-<!-- TODO: إضافة صورة لصفحة إدارة المنتجات -->
-```
 <img width="1867" height="886" alt="Screenshot 2025-10-13 at 14-22-03 POS System - Point of Sale" src="https://github.com/user-attachments/assets/71821fbf-72df-410e-89d4-77dede6be23d" />
 
-```
-
 ### 📊 لوحة التحكم والتقارير
-<!-- TODO: إضافة صورة للوحة التحكم -->
-```
 <img width="1867" height="886" alt="Screenshot 2025-10-13 at 14-07-32 POS System - Point of Sale" src="https://github.com/user-attachments/assets/a842c389-0256-4dc9-bbf3-91ae9805c651" />
 
-```
 
 ## 📋 جدول المحتويات
 
