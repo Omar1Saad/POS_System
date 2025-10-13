@@ -6,7 +6,6 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
 [![NestJS](https://img.shields.io/badge/NestJS-10.x-red.svg)](https://nestjs.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.x-blue.svg)](https://www.postgresql.org/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ## 📸 لقطات الشاشة
 
@@ -100,12 +99,6 @@
 | ![JWT](https://img.shields.io/badge/JWT-Latest-000000?style=flat&logo=jsonwebtokens&logoColor=white) | Latest | المصادقة |
 | ![Passport.js](https://img.shields.io/badge/Passport.js-0.7.x-34E27A?style=flat&logo=passport&logoColor=white) | 0.7.x | استراتيجيات المصادقة |
 
-### 🐳 أدوات التطوير والنشر
-| الأداة | الغرض |
-|--------|-------|
-| ![Docker](https://img.shields.io/badge/Docker-Latest-2496ED?style=flat&logo=docker&logoColor=white) | الحاويات والنشر |
-| ![Git](https://img.shields.io/badge/Git-Latest-F05032?style=flat&logo=git&logoColor=white) | التحكم في الإصدارات |
-
 ## 🚀 كيفية التشغيل محلياً
 
 ### 📋 المتطلبات الأساسية
@@ -121,11 +114,7 @@
 
 ```bash
 # استنساخ المستودع
-git clone https://github.com/yourusername/pos-system.git
-
-# الانتقال إلى مجلد المشروع
-cd pos-system
-```
+git clone https://github.com/Omar1Saad/POS_System.git
 
 ### 🗄️ 2. تشغيل قاعدة البيانات والواجهة الخلفية
 
@@ -135,9 +124,6 @@ cd backend
 
 # إنشاء ملف البيئة (إذا لم يكن موجوداً)
 cp .env.example .env
-
-# تشغيل قاعدة البيانات باستخدام Docker
-docker-compose up -d
 
 # تثبيت التبعيات
 npm install
@@ -158,10 +144,10 @@ cd frontend
 npm install
 
 # تشغيل الواجهة الأمامية
-npm start
+npm run dev
 ```
 
-الواجهة الأمامية ستكون متاحة على: `http://localhost:3001`
+الواجهة الأمامية ستكون متاحة على: `http://localhost:5175`
 
 ### 🔧 4. إعداد قاعدة البيانات
 
@@ -175,10 +161,8 @@ npm run seed
 
 ### ✅ 5. التحقق من التشغيل
 
-1. افتح المتصفح وانتقل إلى `http://localhost:3001`
-2. سجل الدخول باستخدام البيانات الافتراضية:
-   - **البريد الإلكتروني**: admin@pos.com
-   - **كلمة المرور**: admin123
+1. افتح المتصفح وانتقل إلى `http://localhost:5175`
+2. قم بانشاء حساب جديد واعطيه الصلاحيات
 
 ## 📁 هيكل المشروع
 
@@ -234,15 +218,11 @@ pos-system/
 - أضف تعليقات باللغة العربية للمنطق المعقد
 - تأكد من اختبار الميزات الجديدة قبل الإرسال
 
-## 📄 الترخيص
-
-هذا المشروع مرخص تحت رخصة MIT - راجع ملف [LICENSE](LICENSE) للتفاصيل.
-
 ## 👨‍💻 المطور
 
-### [اسمك هنا]
-- **GitHub**: [@yourusername](https://github.com/yourusername)
-- **البريد الإلكتروني**: your.email@example.com
+### [عمر سعد]
+- **GitHub**: [@yourusername](https://github.com/Omar1Saad)
+- **البريد الإلكتروني**: froomomer66@gmail.com
 - **LinkedIn**: [رابط LinkedIn](https://linkedin.com/in/yourprofile)
 
 ---
@@ -251,8 +231,8 @@ pos-system/
 
 - [🚀 مشاهدة النسخة الحية (Live Demo)](https://your-demo-url.com) - *سيتم إضافتها قريباً*
 - [📄 توثيق الـ API](https://api-docs-url.com) - *سيتم إضافتها قريباً*
-- [🐛 الإبلاغ عن مشكلة](https://github.com/yourusername/pos-system/issues)
-- [💡 اقتراح ميزة جديدة](https://github.com/yourusername/pos-system/issues)
+- [🐛 الإبلاغ عن مشكلة](https://github.com/Omar1Saad/POS_System/issues)
+- [💡 اقتراح ميزة جديدة](https://github.com/Omar1Saad/POS_System/issues)
 
 ---
 
@@ -260,6 +240,5 @@ pos-system/
 
 ### ⭐ إذا أعجبك المشروع، لا تنس إعطاؤه نجمة!
 
-**تم بناؤه بـ ❤️ في السعودية**
 
 </div>
