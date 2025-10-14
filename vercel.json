@@ -2,15 +2,13 @@
   "version": 2,
   "builds": [
     {
-      "src": "backend/src/main.ts",
-      "use": "@vercel/nest"
-    },
-    {
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist" 
-      }
+      "config": { "distDir": "dist" }
+    },
+    {
+      "src": "backend/src/main.ts",
+      "use": "@vercel/nest"
     }
   ],
   "rewrites": [
