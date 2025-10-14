@@ -1,0 +1,47 @@
+{
+  "version": 2,
+  "name": "pos-system",
+  
+  // إعدادات البناء (Builds)
+  "builds": [
+    {
+      // بناء الواجهة الأمامية (React)
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist" // مجلد الملفات المُبنية للواجهة الأمامية
+      }
+    },
+    {
+      // بناء الواجهة الخلفية (NestJS) كـ Serverless Function
+      "src": "backend/src/main.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  
+  // قواعد التوجيه (Routing Rules)
+  "routes": [
+    {
+      // توجيه جميع الطلبات التي تبدأ بـ /api إلى الواجهة الخلفية
+      "src": "/api/(.*)",
+      "dest": "/backend/src/main.ts"
+    },
+    {
+      // توجيه جميع الطلبات الأخرى إلى الواجهة الأمامية
+      "src": "/(.*)",
+      "dest": "/frontend/dist/$1"
+    }
+  ],
+  
+  // إعدادات الدوال (Functions)
+  "functions": {
+    "backend/src/main.ts": {
+      "maxDuration": 30 // الحد الأقصى لوقت تنفيذ الدالة (بالثواني)
+    }
+  },
+  
+  // متغيرات البيئة (Environment Variables)
+  "env": {
+    "NODE_ENV": "production"
+  }
+}
