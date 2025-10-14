@@ -30,12 +30,14 @@ import { productService } from '@/services/products';
 import { categoryService } from '@/services/categories';
 import { Product, CreateProduct, Category } from '@/types';
 import { useRoleAccess } from '@/hooks/useRoleAccess';
+import { useButtonLoading } from '@/hooks/useButtonLoading';
 
 const Products: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const { hasManagerAccess, hasAdminAccess } = useRoleAccess();
+  const { isLoading, withLoading } = useButtonLoading();
   
   // Helper function to check if user can see cost information
   const canViewCost = () => hasManagerAccess() || hasAdminAccess();
@@ -66,7 +68,7 @@ const Products: React.FC = () => {
       setLoading(true);
       const response = await productService.getAll(page + 1, pageSize, searchTerm);
       if(!response.data || response.data.length === 0) {
-        throw new Error(response.message||'sds');
+        throw new Error(response.message||'No products found');
       }
       setProducts(response.data);
       setTotal(response.total);
@@ -173,15 +175,15 @@ const Products: React.FC = () => {
     });
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = withLoading('submit', async () => {
     try {
       // Prepare form data for submission
       const submitData = { ...formData };
       
       
       // If average cost is provided, don't send manual price - let backend calculate it
-      if (submitData.averageCost > 0) {
-        delete submitData.price;
+      if (submitData.averageCost && submitData.averageCost > 0) {
+        delete (submitData as any).price;
       }
       
       
@@ -204,9 +206,9 @@ const Products: React.FC = () => {
     } catch (error:any) {
       setSnackbar({ open: true, message: error.message, severity: 'error' });
     }
-  };
+  });
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = withLoading('delete', async (id: number) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
         const res = await productService.delete(id);
@@ -219,9 +221,9 @@ const Products: React.FC = () => {
         setSnackbar({ open: true, message: error.message, severity: 'error' });
       }
     }
-  };
+  });
 
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = withLoading('bulkDelete', async () => {
     if (window.confirm(`Are you sure you want to delete ${selectedRows.length} products?`)) {
       try {
         const res = await productService.bulkDelete(selectedRows as number[]);
@@ -235,9 +237,9 @@ const Products: React.FC = () => {
         setSnackbar({ open: true, message: error.message, severity: 'error' });
       }
     }
-  };
+  });
 
-  const handleQuickEditProfit = async (product: Product) => {
+  const handleQuickEditProfit = withLoading('quickEdit', async (product: Product) => {
     const newProfitPercentage = prompt(
       `Enter new profit percentage for "${product.name}":`,
       product.profitPercentage?.toString() || '25'
@@ -257,7 +259,7 @@ const Products: React.FC = () => {
         setSnackbar({ open: true, message: error.message, severity: 'error' });
       }
     }
-  };
+  });
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 70 },
@@ -357,6 +359,7 @@ const Products: React.FC = () => {
                 size="small"
                 onClick={() => handleDelete(params.row.id)}
                 color="error"
+                disabled={isLoading('delete')}
               >
                 <DeleteIcon />
               </IconButton>
@@ -368,6 +371,7 @@ const Products: React.FC = () => {
               onClick={() => handleQuickEditProfit(params.row)}
               color="secondary"
               title="Quick Edit Profit %"
+              disabled={isLoading('quickEdit')}
             >
               <Typography variant="caption" sx={{ fontSize: '10px', fontWeight: 'bold' }}>
                 %
@@ -412,8 +416,9 @@ const Products: React.FC = () => {
                   color="error"
                   startIcon={<DeleteIcon />}
                   onClick={() => handleBulkDelete()}
+                  disabled={isLoading('bulkDelete')}
                 >
-                  Delete Selected ({selectedRows.length})
+                  {isLoading('bulkDelete') ? 'Deleting...' : `Delete Selected (${selectedRows.length})`}
                 </Button>
               )}
             </Box>
@@ -489,11 +494,11 @@ const Products: React.FC = () => {
               value={formData.price && typeof formData.price === 'number' ? formData.price.toFixed(2) : '0.00'}
               onChange={handleFormChange('price')}
               margin="normal"
-              disabled={dialogMode === 'view' || (formData.averageCost > 0 && canViewCost())}
+              disabled={dialogMode === 'view' || Boolean(formData.averageCost && formData.averageCost > 0 && canViewCost())}
               required
               inputProps={{ min: 0, step: 0.01 }}
               helperText={
-                formData.averageCost > 0 && canViewCost()
+                formData.averageCost && formData.averageCost > 0 && canViewCost()
                   ? "Price is automatically calculated based on average cost + profit percentage"
                   : "Enter price manually or set average cost for automatic calculation"
               }
@@ -542,8 +547,11 @@ const Products: React.FC = () => {
             {dialogMode === 'view' ? 'Close' : 'Cancel'}
           </Button>
           {dialogMode !== 'view' && (
-            <Button onClick={handleSubmit} variant="contained">
-              {dialogMode === 'create' ? 'Create' : 'Update'}
+            <Button onClick={handleSubmit} variant="contained" disabled={isLoading('submit')}>
+              {isLoading('submit') 
+                ? (dialogMode === 'create' ? 'Creating...' : 'Updating...') 
+                : (dialogMode === 'create' ? 'Create' : 'Update')
+              }
             </Button>
           )}
         </DialogActions>

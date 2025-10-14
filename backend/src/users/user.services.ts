@@ -3,10 +3,11 @@ import { User, UserRole } from "./entities/user.entity";
 import { CreateUserDto } from "./dto/create-user.dto";
 import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from "./dto/update-user.dto";
-import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { BadRequestException, NotFoundException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { DataResponse, PaginationResponse, DeleteResponse } from "../common/types";
 
+@Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)

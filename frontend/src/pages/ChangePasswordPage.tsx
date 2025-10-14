@@ -20,6 +20,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useButtonLoading } from '@/hooks/useButtonLoading';
 
 const ChangePasswordPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -30,12 +31,12 @@ const ChangePasswordPage: React.FC = () => {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
   const { changePassword, user } = useAuth();
   const navigate = useNavigate();
+  const { isLoading, withLoading } = useButtonLoading();
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -44,28 +45,24 @@ const ChangePasswordPage: React.FC = () => {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = withLoading('changePassword', async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess(false);
-    setLoading(true);
 
     // Validation
     if (formData.newPassword !== formData.confirmPassword) {
       setError('New passwords do not match');
-      setLoading(false);
       return;
     }
 
     if (formData.newPassword.length < 6) {
       setError('New password must be at least 6 characters long');
-      setLoading(false);
       return;
     }
 
     if (formData.oldPassword === formData.newPassword) {
       setError('New password must be different from the old password');
-      setLoading(false);
       return;
     }
 
@@ -83,10 +80,8 @@ const ChangePasswordPage: React.FC = () => {
         error.response?.data?.message || 
         'Failed to change password. Please check your current password.'
       );
-    } finally {
-      setLoading(false);
     }
-  };
+  });
 
   const handleBack = () => {
     navigate('/dashboard');
@@ -146,7 +141,7 @@ const ChangePasswordPage: React.FC = () => {
                 required
                 autoComplete="current-password"
                 autoFocus
-                disabled={loading}
+                disabled={isLoading('changePassword')}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -154,7 +149,7 @@ const ChangePasswordPage: React.FC = () => {
                         aria-label="toggle current password visibility"
                         onClick={() => setShowOldPassword(!showOldPassword)}
                         edge="end"
-                        disabled={loading}
+                        disabled={isLoading('changePassword')}
                       >
                         {showOldPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
@@ -172,7 +167,7 @@ const ChangePasswordPage: React.FC = () => {
                 margin="normal"
                 required
                 autoComplete="new-password"
-                disabled={loading}
+                disabled={isLoading('changePassword')}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -180,7 +175,7 @@ const ChangePasswordPage: React.FC = () => {
                         aria-label="toggle new password visibility"
                         onClick={() => setShowNewPassword(!showNewPassword)}
                         edge="end"
-                        disabled={loading}
+                        disabled={isLoading('changePassword')}
                       >
                         {showNewPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
@@ -198,7 +193,7 @@ const ChangePasswordPage: React.FC = () => {
                 margin="normal"
                 required
                 autoComplete="new-password"
-                disabled={loading}
+                disabled={isLoading('changePassword')}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -206,7 +201,7 @@ const ChangePasswordPage: React.FC = () => {
                         aria-label="toggle confirm password visibility"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         edge="end"
-                        disabled={loading}
+                        disabled={isLoading('changePassword')}
                       >
                         {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
@@ -219,7 +214,7 @@ const ChangePasswordPage: React.FC = () => {
                 <Button
                   variant="outlined"
                   onClick={handleBack}
-                  disabled={loading}
+                  disabled={isLoading('changePassword')}
                   sx={{ flex: 1 }}
                 >
                   Cancel
@@ -227,11 +222,11 @@ const ChangePasswordPage: React.FC = () => {
                 <Button
                   type="submit"
                   variant="contained"
-                  disabled={loading || !formData.oldPassword || !formData.newPassword || !formData.confirmPassword}
-                  startIcon={loading ? <CircularProgress size={20} /> : <VpnKeyIcon />}
+                  disabled={isLoading('changePassword') || !formData.oldPassword || !formData.newPassword || !formData.confirmPassword}
+                  startIcon={isLoading('changePassword') ? <CircularProgress size={20} /> : <VpnKeyIcon />}
                   sx={{ flex: 1 }}
                 >
-                  {loading ? 'Updating...' : 'Update Password'}
+                  {isLoading('changePassword') ? 'Updating...' : 'Update Password'}
                 </Button>
               </Box>
             </Box>

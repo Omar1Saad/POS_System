@@ -18,15 +18,18 @@ import { AnalyticsModule } from './analytics/analytics.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST ?? 'localhost',
-      port: parseInt(process.env.DB_PORT ?? '5432', 10),
-      username: process.env.DB_USER_NAME ?? 'your_username',
-      password: process.env.DB_PASSWORD ?? 'your_password',
-      database: process.env.DB_NAME ?? 'your_database',
-      autoLoadEntities: true,
-      synchronize: true,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type:'postgres',
+        url: configService.get<string>('DATABASE_URL'),
+        autoLoadEntities: true,
+        synchronize: false,
+        ssl:{
+          rejectUnauthorized: false,
+        }
+      }),
     }),
     UserModule,
     CategoryModule,

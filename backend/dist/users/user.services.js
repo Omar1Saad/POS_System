@@ -161,6 +161,7 @@ let UserService = class UserService {
 };
 exports.UserService = UserService;
 exports.UserService = UserService = __decorate([
+    (0, common_1.Injectable)(),
     __param(0, (0, typeorm_2.InjectRepository)(user_entity_1.User)),
     __metadata("design:paramtypes", [typeorm_1.Repository])
 ], UserService);

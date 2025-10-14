@@ -44,12 +44,14 @@ import {
 } from '@mui/icons-material';
 import { Supplier, CreateSupplier } from '@/types';
 import { supplierService } from '@/services/suppliers';
+import { useButtonLoading } from '@/hooks/useButtonLoading';
 
 const Suppliers: React.FC = () => {
   // State for suppliers data
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
+  const { isLoading, withLoading } = useButtonLoading();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
@@ -141,11 +143,10 @@ const Suppliers: React.FC = () => {
   };
 
   // Handle create supplier
-  const handleCreateSupplier = async () => {
+  const handleCreateSupplier = withLoading('create', async () => {
     if (!validateForm()) return;
 
     try {
-      setLoading(true);
       const res = await supplierService.create(formData);
       if (!res.success) {
         throw new Error(res.message);
@@ -157,17 +158,14 @@ const Suppliers: React.FC = () => {
     } catch (error: any) {
       console.error('Error creating supplier:', error);
       showNotification(error.message || 'Failed to create supplier', 'error');
-    } finally {
-      setLoading(false);
     }
-  };
+  });
 
   // Handle edit supplier
-  const handleEditSupplier = async () => {
+  const handleEditSupplier = withLoading('update', async () => {
     if (!selectedSupplier || !validateForm()) return;
 
     try {
-      setLoading(true);
       const res = await supplierService.update(selectedSupplier.id, formData);
       if (!res.success) {
         throw new Error(res.message);
@@ -180,17 +178,14 @@ const Suppliers: React.FC = () => {
     } catch (error: any) {
       console.error('Error updating supplier:', error);
       showNotification(error.message || 'Failed to update supplier', 'error');
-    } finally {
-      setLoading(false);
     }
-  };
+  });
 
   // Handle delete supplier
-  const handleDeleteSupplier = async () => {
+  const handleDeleteSupplier = withLoading('delete', async () => {
     if (!selectedSupplier) return;
 
     try {
-      setLoading(true);
       const res = await supplierService.delete(selectedSupplier.id);
       if (!res.success) {
         throw new Error(res.message);
@@ -202,17 +197,14 @@ const Suppliers: React.FC = () => {
     } catch (error: any) {
       console.error('Error deleting supplier:', error);
       showNotification(error.message || 'Failed to delete supplier', 'error');
-    } finally {
-      setLoading(false);
     }
-  };
+  });
 
   // Handle bulk delete
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = withLoading('bulkDelete', async () => {
     if (selectedRows.length === 0) return;
 
     try {
-      setLoading(true);
       const res = await supplierService.bulkDelete(selectedRows as number[]);
       if (!res.success) {
         throw new Error(res.message);
@@ -225,10 +217,8 @@ const Suppliers: React.FC = () => {
       // Ensure we always show supplier-specific error message
       const errorMessage = error.message || 'Failed to delete suppliers';
       showNotification(errorMessage.includes('suppliers') ? errorMessage : 'Failed to delete suppliers', 'error');
-    } finally {
-      setLoading(false);
     }
-  };
+  });
 
   // Open create modal
   const openCreateModal = () => {
@@ -430,8 +420,9 @@ const Suppliers: React.FC = () => {
                 color="error"
                 startIcon={<BulkDeleteIcon />}
                 onClick={handleBulkDelete}
+                disabled={isLoading('bulkDelete')}
               >
-                Delete Selected ({selectedRows.length})
+                {isLoading('bulkDelete') ? 'Deleting...' : `Delete Selected (${selectedRows.length})`}
               </Button>
             )}
           </Box>
@@ -548,9 +539,14 @@ const Suppliers: React.FC = () => {
           <Button
             variant="contained"
             onClick={isCreateModalOpen ? handleCreateSupplier : handleEditSupplier}
-            disabled={loading}
+            disabled={isLoading('create') || isLoading('update')}
           >
-            {isCreateModalOpen ? 'Create' : 'Update'}
+            {isLoading('create') 
+              ? 'Creating...' 
+              : isLoading('update') 
+                ? 'Updating...' 
+                : (isCreateModalOpen ? 'Create' : 'Update')
+            }
           </Button>
         </DialogActions>
       </Dialog>
@@ -583,9 +579,9 @@ const Suppliers: React.FC = () => {
             variant="contained"
             color="error"
             onClick={handleDeleteSupplier}
-            disabled={loading}
+            disabled={isLoading('delete')}
           >
-            Delete
+            {isLoading('delete') ? 'Deleting...' : 'Delete'}
           </Button>
         </DialogActions>
       </Dialog>

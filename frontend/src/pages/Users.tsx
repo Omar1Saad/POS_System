@@ -28,10 +28,12 @@ import {
 } from '@mui/icons-material';
 import { userService } from '@/services/users';
 import { User, CreateUser } from '@/types';
+import { useButtonLoading } from '@/hooks/useButtonLoading';
 
 const Users: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isLoading, withLoading } = useButtonLoading();
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
@@ -113,7 +115,7 @@ const Users: React.FC = () => {
     }));
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = withLoading('submit', async () => {
     try {
       if (dialogMode === 'create') {
         const res = await userService.create(formData);
@@ -134,9 +136,9 @@ const Users: React.FC = () => {
     } catch (error: any) {
       setSnackbar({ open: true, message: error.message, severity: 'error' });
     }
-  };
+  });
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = withLoading('delete', async (id: number) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
         const res = await userService.delete(id);
@@ -149,9 +151,9 @@ const Users: React.FC = () => {
         setSnackbar({ open: true, message: error.message, severity: 'error' });
       }
     }
-  };
+  });
 
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = withLoading('bulkDelete', async () => {
     if (selectedRows.length === 0) return;
     
     if (window.confirm(`Are you sure you want to delete ${selectedRows.length} user(s)?`)) {
@@ -167,7 +169,7 @@ const Users: React.FC = () => {
         setSnackbar({ open: true, message: error.message, severity: 'error' });
       }
     }
-  };
+  });
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 70 },
@@ -220,6 +222,7 @@ const Users: React.FC = () => {
             size="small"
             onClick={() => handleDelete(params.row.id)}
             color="error"
+            disabled={isLoading('delete')}
           >
             <DeleteIcon />
           </IconButton>
@@ -253,8 +256,9 @@ const Users: React.FC = () => {
                   startIcon={<DeleteIcon />}
                   onClick={handleBulkDelete}
                   sx={{ mr: 1 }}
+                  disabled={isLoading('bulkDelete')}
                 >
-                  Delete Selected ({selectedRows.length})
+                  {isLoading('bulkDelete') ? 'Deleting...' : `Delete Selected (${selectedRows.length})`}
                 </Button>
               )}
               <Button
@@ -354,8 +358,11 @@ const Users: React.FC = () => {
             {dialogMode === 'view' ? 'Close' : 'Cancel'}
           </Button>
           {dialogMode !== 'view' && (
-            <Button onClick={handleSubmit} variant="contained">
-              {dialogMode === 'create' ? 'Create' : 'Update'}
+            <Button onClick={handleSubmit} variant="contained" disabled={isLoading('submit')}>
+              {isLoading('submit') 
+                ? (dialogMode === 'create' ? 'Creating...' : 'Updating...') 
+                : (dialogMode === 'create' ? 'Create' : 'Update')
+              }
             </Button>
           )}
         </DialogActions>

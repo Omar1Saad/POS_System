@@ -21,7 +21,7 @@ exports.AuthModule = AuthModule = __decorate([
     (0, common_1.Module)({
         imports: [
             user_module_1.UserModule,
-            passport_1.PassportModule,
+            passport_1.PassportModule.register({ defaultStrategy: 'jwt' }),
             jwt_1.JwtModule.register({
                 secret: process.env.JWT_SECRET || 'your-secret-key',
                 signOptions: {
@@ -31,7 +31,7 @@ exports.AuthModule = AuthModule = __decorate([
         ],
         controllers: [auth_controller_1.AuthController],
         providers: [auth_services_1.AuthService, jwt_strategy_1.JwtStrategy],
-        exports: [auth_services_1.AuthService],
+        exports: [auth_services_1.AuthService, jwt_strategy_1.JwtStrategy, passport_1.PassportModule],
     })
 ], AuthModule);
 //# sourceMappingURL=auth.module.js.map

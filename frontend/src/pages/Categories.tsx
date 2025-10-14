@@ -25,11 +25,13 @@ import {
 import { categoryService } from '@/services/categories';
 import { Category, CreateCategory } from '@/types';
 import { useRoleAccess } from '@/hooks/useRoleAccess';
+import { useButtonLoading } from '@/hooks/useButtonLoading';
 
 const Categories: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const { hasManagerAccess } = useRoleAccess();
+  const { isLoading, withLoading } = useButtonLoading();
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
@@ -39,11 +41,6 @@ const Categories: React.FC = () => {
   const [dialogMode, setDialogMode] = useState<'create' | 'edit' | 'view'>('create');
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
-  
-  // Loading states for buttons
-  const [submitLoading, setSubmitLoading] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState<number | null>(null);
-  const [bulkDeleteLoading, setBulkDeleteLoading] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState<CreateCategory>({
@@ -105,10 +102,7 @@ const Categories: React.FC = () => {
     }));
   };
 
-  const handleSubmit = async () => {
-    if (submitLoading) return; // Prevent multiple submissions
-    
-    setSubmitLoading(true);
+  const handleSubmit = withLoading('submit', async () => {
     try {
       if (dialogMode === 'create') {
         const res = await categoryService.create(formData);
@@ -130,16 +124,11 @@ const Categories: React.FC = () => {
     } catch (error: any) {
       console.error('Error saving category:', error);
       setSnackbar({ open: true, message: error.message, severity: 'error' });
-    } finally {
-      setSubmitLoading(false);
     }
-  };
+  });
 
-  const handleDelete = async (id: number) => {
-    if (deleteLoading === id) return; // Prevent multiple deletions for same item
-    
+  const handleDelete = withLoading('delete', async (id: number) => {
     if (window.confirm('Are you sure you want to delete this category?')) {
-      setDeleteLoading(id);
       try {
         const res = await categoryService.delete(id);
         if(!res.success){
@@ -149,17 +138,14 @@ const Categories: React.FC = () => {
         fetchCategories();
       } catch (error:any) {
         setSnackbar({ open: true, message: error.message, severity: 'error' });
-      } finally {
-        setDeleteLoading(null);
       }
     }
-  };
+  });
 
-  const handleBulkDelete = async () => {
-    if (selectedRows.length === 0 || bulkDeleteLoading) return;
+  const handleBulkDelete = withLoading('bulkDelete', async () => {
+    if (selectedRows.length === 0) return;
     
     if (window.confirm(`Are you sure you want to delete ${selectedRows.length} category(ies)?`)) {
-      setBulkDeleteLoading(true);
       try {
         const res = await categoryService.bulkDelete(selectedRows as number[]);
         if(!res.success){
@@ -170,11 +156,9 @@ const Categories: React.FC = () => {
         fetchCategories();
       } catch (error:any) {
         setSnackbar({ open: true, message: error.message, severity: 'error' });
-      } finally {
-        setBulkDeleteLoading(false);
       }
     }
-  };
+  });
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 70 },
@@ -213,7 +197,7 @@ const Categories: React.FC = () => {
                 size="small"
                 onClick={() => handleDelete(params.row.id)}
                 color="error"
-                disabled={deleteLoading === params.row.id}
+                disabled={isLoading('delete')}
               >
                 <DeleteIcon />
               </IconButton>
@@ -248,10 +232,10 @@ const Categories: React.FC = () => {
                   color="error"
                   startIcon={<DeleteIcon />}
                   onClick={handleBulkDelete}
-                  disabled={bulkDeleteLoading}
-                  sx={{ mr: 1 }}
-                >
-                  {bulkDeleteLoading ? 'Deleting...' : `Delete Selected (${selectedRows.length})`}
+                disabled={isLoading('bulkDelete')}
+                sx={{ mr: 1 }}
+              >
+                {isLoading('bulkDelete') ? 'Deleting...' : `Delete Selected (${selectedRows.length})`}
                 </Button>
               )}
               {hasManagerAccess() && (
@@ -325,9 +309,9 @@ const Categories: React.FC = () => {
             <Button 
               onClick={handleSubmit} 
               variant="contained"
-              disabled={submitLoading}
+              disabled={isLoading('submit')}
             >
-              {submitLoading 
+              {isLoading('submit') 
                 ? (dialogMode === 'create' ? 'Creating...' : 'Updating...') 
                 : (dialogMode === 'create' ? 'Create' : 'Update')
               }

@@ -24,6 +24,7 @@ import {
   Store as StoreIcon,
 } from '@mui/icons-material';
 import { useAuth } from '@/contexts/AuthContext';
+import { useButtonLoading } from '@/hooks/useButtonLoading';
 
 interface RegisterPageProps {
   onSwitchToLogin?: () => void;
@@ -40,11 +41,11 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin }) => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
   const { register } = useAuth();
+  const { isLoading, withLoading } = useButtonLoading();
 
   const handleChange = (field: string) => (e: any) => {
     setFormData(prev => ({
@@ -53,22 +54,19 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin }) => {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = withLoading('register', async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess(false);
-    setLoading(true);
 
     // Validation
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
-      setLoading(false);
       return;
     }
 
     if (formData.password.length < 6) {
       setError('Password must be at least 6 characters long');
-      setLoading(false);
       return;
     }
 
@@ -96,10 +94,8 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin }) => {
         error.response?.data?.message || 
         'Registration failed. Please try again.'
       );
-    } finally {
-      setLoading(false);
     }
-  };
+  });
 
   const handleTogglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -158,7 +154,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin }) => {
                 required
                 autoComplete="name"
                 autoFocus
-                disabled={loading}
+                disabled={isLoading('register')}
               />
 
               <TextField
@@ -169,7 +165,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin }) => {
                 margin="normal"
                 required
                 autoComplete="username"
-                disabled={loading}
+                disabled={isLoading('register')}
               />
 
               <TextField
@@ -181,7 +177,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin }) => {
                 margin="normal"
                 required
                 autoComplete="email"
-                disabled={loading}
+                disabled={isLoading('register')}
               />
 
               <FormControl fullWidth margin="normal">
@@ -190,7 +186,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin }) => {
                   value={formData.role}
                   label="Role"
                   onChange={handleChange('role')}
-                  disabled={loading}
+                  disabled={isLoading('register')}
                 >
                   <MenuItem value="cashier">Cashier</MenuItem>
                   <MenuItem value="manager">Manager</MenuItem>
@@ -207,7 +203,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin }) => {
                 margin="normal"
                 required
                 autoComplete="new-password"
-                disabled={loading}
+                disabled={isLoading('register')}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -215,7 +211,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin }) => {
                         aria-label="toggle password visibility"
                         onClick={handleTogglePasswordVisibility}
                         edge="end"
-                        disabled={loading}
+                        disabled={isLoading('register')}
                       >
                         {showPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
@@ -233,7 +229,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin }) => {
                 margin="normal"
                 required
                 autoComplete="new-password"
-                disabled={loading}
+                disabled={isLoading('register')}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -241,7 +237,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin }) => {
                         aria-label="toggle confirm password visibility"
                         onClick={handleToggleConfirmPasswordVisibility}
                         edge="end"
-                        disabled={loading}
+                        disabled={isLoading('register')}
                       >
                         {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
@@ -255,10 +251,10 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin }) => {
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2, py: 1.5 }}
-                disabled={loading || !formData.fullName || !formData.username || !formData.email || !formData.password || !formData.confirmPassword}
-                startIcon={loading ? <CircularProgress size={20} /> : <PersonAddIcon />}
+                disabled={isLoading('register') || !formData.fullName || !formData.username || !formData.email || !formData.password || !formData.confirmPassword}
+                startIcon={isLoading('register') ? <CircularProgress size={20} /> : <PersonAddIcon />}
               >
-                {loading ? 'Creating Account...' : 'Create Account'}
+                {isLoading('register') ? 'Creating Account...' : 'Create Account'}
               </Button>
 
               {/* Login Link */}

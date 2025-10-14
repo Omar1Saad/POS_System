@@ -65,8 +65,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           
           // Validate that the parsed user has required fields
           if (parsedUser?.id && parsedUser?.email && parsedUser?.role) {
-            setToken(savedToken);
-            setUser(parsedUser);
+            // Additional validation - check if token is not expired
+            try {
+              const tokenPayload = JSON.parse(atob(savedToken.split('.')[1]));
+              const currentTime = Math.floor(Date.now() / 1000);
+              
+              if (tokenPayload.exp && tokenPayload.exp > currentTime) {
+                setToken(savedToken);
+                setUser(parsedUser);
+              } else {
+                // Token expired, clear auth data
+                clearAuthData();
+              }
+            } catch (tokenError) {
+              // Invalid token format, clear auth data
+              clearAuthData();
+            }
           } else {
             clearAuthData();
           }
@@ -79,7 +93,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
     
     // Use a small timeout to ensure DOM is ready and prevent hydration issues
-    const timeoutId = setTimeout(initializeAuth, 100);
+    const timeoutId = setTimeout(initializeAuth, 50);
     
     return () => clearTimeout(timeoutId);
   }, []);
@@ -101,7 +115,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (!userData.id || !userData.email || !userData.role) {
         throw new Error('Invalid user data structure');
       }
-            
+      console.log(access_token, userData);
       // Save to localStorage
       localStorage.setItem('token', access_token);
       localStorage.setItem('user', JSON.stringify(userData));

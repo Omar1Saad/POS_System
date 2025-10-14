@@ -9,7 +9,7 @@ import { UserModule } from 'src/users/user.module';
   @Module({
     imports: [
       UserModule,
-      PassportModule,
+      PassportModule.register({ defaultStrategy: 'jwt' }),
       JwtModule.register({
         secret: process.env.JWT_SECRET || 'your-secret-key',
         signOptions: { 
@@ -19,6 +19,6 @@ import { UserModule } from 'src/users/user.module';
     ],
     controllers: [AuthController],
     providers: [AuthService, JwtStrategy],
-    exports: [AuthService],
+    exports: [AuthService, JwtStrategy, PassportModule],
   })
   export class AuthModule {}

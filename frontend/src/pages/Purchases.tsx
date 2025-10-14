@@ -61,10 +61,12 @@ import { supplierService } from '@/services/suppliers';
 import { productService } from '@/services/products';
 import { categoryService } from '@/services/categories';
 import { useRoleAccess } from '@/hooks/useRoleAccess';
+import { useButtonLoading } from '@/hooks/useButtonLoading';
 
 const Purchases: React.FC = () => {
   // Role access
   const { hasAdminAccess } = useRoleAccess();
+  const { isLoading, withLoading } = useButtonLoading();
   
   // State for purchases data
   const [purchases, setPurchases] = useState<Purchase[]>([]);
@@ -192,7 +194,7 @@ const Purchases: React.FC = () => {
   };
 
   // Clear selected rows
-  const handleClearSelection = async () => {
+  const handleClearSelection = withLoading('bulkDelete', async () => {
     const response = await purchaseService.deleteBulk(selectedRows as number[]);
     if (response.success) {
       showNotification('Purchases deleted successfully', 'success');
@@ -202,7 +204,7 @@ const Purchases: React.FC = () => {
       showNotification(response.message || 'Failed to delete purchases', 'error');
     }
     setSelectedRows([]);
-  };
+  });
 
   // Get status chip color
   const getStatusColor = (status: string): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
@@ -283,9 +285,8 @@ const Purchases: React.FC = () => {
   };
 
   // Handle complete purchase
-  const handleCompletePurchase = async (purchase: Purchase) => {
+  const handleCompletePurchase = withLoading('complete', async (purchase: Purchase) => {
     try {
-      setLoading(true);
       const response = await purchaseService.complete(purchase.id);
       
       if (response.success) {
@@ -297,15 +298,12 @@ const Purchases: React.FC = () => {
       }
     } catch (error: any) {
       showNotification(error.message || 'Failed to complete purchase', 'error');
-    } finally {
-      setLoading(false);
     }
-  };
+  });
 
   // Handle cancel purchase
-  const handleCancelPurchase = async (purchase: Purchase) => {
+  const handleCancelPurchase = withLoading('cancel', async (purchase: Purchase) => {
     try {
-      setLoading(true);
       const response = await purchaseService.cancel(purchase.id);
       
       if (response.success) {
@@ -317,17 +315,14 @@ const Purchases: React.FC = () => {
       }
     } catch (error: any) {
       showNotification(error.message || 'Failed to cancel purchase', 'error');
-    } finally {
-      setLoading(false);
     }
-  };
+  });
 
   // Handle delete purchase
-  const handleDeletePurchase = async () => {
+  const handleDeletePurchase = withLoading('delete', async () => {
     if (!selectedPurchase) return;
 
     try {
-      setLoading(true);
       const response = await purchaseService.delete(selectedPurchase.id);
       
       if (response.success) {
@@ -341,10 +336,8 @@ const Purchases: React.FC = () => {
       }
     } catch (error: any) {
       showNotification(error.message || 'Failed to delete purchase', 'error');
-    } finally {
-      setLoading(false);
     }
-  };
+  });
 
   // Open delete modal
   const openDeleteModal = (purchase: Purchase) => {
@@ -1003,8 +996,9 @@ const Purchases: React.FC = () => {
                   startIcon={<DeleteIcon />}
                   onClick={handleClearSelection}
                   size="medium"
+                  disabled={isLoading('bulkDelete')}
                 >
-                  Delete Selected ({selectedRows.length})
+                  {isLoading('bulkDelete') ? 'Deleting...' : `Delete Selected (${selectedRows.length})`}
                 </Button>
               </Tooltip>
             )}
@@ -1727,9 +1721,9 @@ const Purchases: React.FC = () => {
             variant="contained"
             color="error"
             onClick={handleDeletePurchase}
-            disabled={loading}
+            disabled={isLoading('delete')}
           >
-            Delete
+            {isLoading('delete') ? 'Deleting...' : 'Delete'}
           </Button>
         </DialogActions>
       </Dialog>

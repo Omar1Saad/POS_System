@@ -64,10 +64,12 @@ import { customerService } from '@/services/customers';
 import { productService } from '@/services/products';
 import { categoryService } from '@/services/categories';
 import { useRoleAccess } from '@/hooks/useRoleAccess';
+import { useButtonLoading } from '@/hooks/useButtonLoading';
 
 const Sales: React.FC = () => {
   // Role access
   const { hasAdminAccess, hasCashierAccess } = useRoleAccess();
+  const { isLoading, withLoading } = useButtonLoading();
   
   // State for sales data
   const [sales, setSales] = useState<Sale[]>([]);
@@ -188,7 +190,7 @@ const Sales: React.FC = () => {
   };
 
   // Clear selected rows
-  const handleClearSelection = async () => {
+  const handleClearSelection = withLoading('bulkDelete', async () => {
     const response = await saleService.deleteBulk(selectedRows as number[]);
     if (response.success) {
       showNotification('Sales deleted successfully', 'success');
@@ -198,7 +200,7 @@ const Sales: React.FC = () => {
       showNotification(response.message || 'Failed to delete sales', 'error');
     }
     setSelectedRows([]);
-  };
+  });
 
   // Get status chip color
   const getStatusColor = (status: string): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
@@ -271,7 +273,7 @@ const Sales: React.FC = () => {
   };
 
   // Handle complete sale
-  const handleCompleteSale = async (sale: Sale) => {
+  const handleCompleteSale = withLoading('complete', async (sale: Sale) => {
     // Pre-validate before making API call
     if (sale.total <= 0) {
       showNotification(
@@ -282,7 +284,6 @@ const Sales: React.FC = () => {
     }
 
     try {
-      setLoading(true);
       const response = await saleService.complete(sale.id);
       
       if (response.success) {
@@ -296,32 +297,26 @@ const Sales: React.FC = () => {
       // Extract error message from API response
       const errorMessage = error.response?.data?.message || error.message || 'Failed to complete sale';
       showNotification(errorMessage, 'error');
-    } finally {
-      setLoading(false);
     }
-  };
+  });
 
   // Handle cancel sale
-  const handleCancelSale = async (sale: Sale) => {
+  const handleCancelSale = withLoading('cancel', async (sale: Sale) => {
     try {
-      setLoading(true);
       await saleService.cancel(sale.id);
       await fetchSales();
       await fetchSummary();
       showNotification('Sale cancelled successfully', 'success');
     } catch (error: any) {
       showNotification(error.message || 'Failed to cancel sale', 'error');
-    } finally {
-      setLoading(false);
     }
-  };
+  });
 
   // Handle delete sale
-  const handleDeleteSale = async () => {
+  const handleDeleteSale = withLoading('delete', async () => {
     if (!selectedSale) return;
 
     try {
-      setLoading(true);
       await saleService.delete(selectedSale.id);
       setIsDeleteModalOpen(false);
       setSelectedSale(null);
@@ -330,10 +325,8 @@ const Sales: React.FC = () => {
       showNotification('Sale deleted successfully', 'success');
     } catch (error: any) {
       showNotification(error.message || 'Failed to delete sale', 'error');
-    } finally {
-      setLoading(false);
     }
-  };
+  });
 
   // Open delete modal
   const openDeleteModal = (sale: Sale) => {
@@ -533,7 +526,7 @@ const Sales: React.FC = () => {
   };
 
   // Save sale changes
-  const saveSaleChanges = async () => {
+  const saveSaleChanges = withLoading('saveChanges', async () => {
     if (!selectedSale || saleItems.length === 0) {
       showNotification('Please add at least one item to the sale', 'warning');
       return;
@@ -551,7 +544,6 @@ const Sales: React.FC = () => {
     }
 
     try {
-      setLoading(true);
       const total = calculateSaleTotal();
       
       // Update sale with total and payment method
@@ -580,10 +572,8 @@ const Sales: React.FC = () => {
       // Extract error message from API response
       const errorMessage = error.response?.data?.message || error.message || 'Failed to update sale';
       showNotification(errorMessage, 'error');
-    } finally {
-      setLoading(false);
     }
-  };
+  });
 
 
   // Validate POS sale
@@ -600,11 +590,10 @@ const Sales: React.FC = () => {
   };
 
   // Process sale
-  const processSale = async () => {
+  const processSale = withLoading('processSale', async () => {
     if (!validatePOSSale()) return;
     
     try {
-      setLoading(true);
       // Create sale with only customerId
       const saleData: CreateSale = {
         customerId: selectedCustomerId,
@@ -617,10 +606,8 @@ const Sales: React.FC = () => {
       showNotification(`Sale created successfully!`, 'success');
     } catch (error: any) {
       showNotification(error.message || 'Failed to process sale', 'error');
-    } finally {
-      setLoading(false);
     }
-  };
+  });
 
 
   // Update button click handler
@@ -980,8 +967,9 @@ const Sales: React.FC = () => {
                   startIcon={<DeleteIcon />}
                   onClick={handleClearSelection}
                   size="medium"
+                  disabled={isLoading('bulkDelete')}
                 >
-                  Delete Selected ({selectedRows.length})
+                  {isLoading('bulkDelete') ? 'Deleting...' : `Delete Selected (${selectedRows.length})`}
                 </Button>
               </Tooltip>
             )}
@@ -1096,10 +1084,10 @@ const Sales: React.FC = () => {
             color="primary"
             size="large"
             onClick={processSale}
-            disabled={loading}
+            disabled={isLoading('processSale')}
             startIcon={<AddIcon />}
           >
-            Create Sale
+            {isLoading('processSale') ? 'Creating...' : 'Create Sale'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1406,10 +1394,10 @@ const Sales: React.FC = () => {
                       size="large"
                       fullWidth
                       onClick={saveSaleChanges}
-                      disabled={loading || saleItems.length === 0}
+                      disabled={isLoading('saveChanges') || saleItems.length === 0}
                       startIcon={<EditIcon />}
                     >
-                      Save Changes
+                      {isLoading('saveChanges') ? 'Saving...' : 'Save Changes'}
                     </Button>
                   </Box>
                 )}
@@ -1581,9 +1569,9 @@ const Sales: React.FC = () => {
             variant="contained"
             color="error"
             onClick={handleDeleteSale}
-            disabled={loading}
+            disabled={isLoading('delete')}
           >
-            Delete
+            {isLoading('delete') ? 'Deleting...' : 'Delete'}
           </Button>
         </DialogActions>
       </Dialog>

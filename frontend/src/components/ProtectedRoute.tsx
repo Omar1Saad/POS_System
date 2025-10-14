@@ -18,7 +18,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
     if (!loading && !initialLoadComplete) {
       const timer = setTimeout(() => {
         setInitialLoadComplete(true);
-      }, 100);
+      }, 50);
       return () => clearTimeout(timer);
     }
   }, [loading, initialLoadComplete]);

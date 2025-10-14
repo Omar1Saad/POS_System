@@ -30,15 +30,18 @@ exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
             config_1.ConfigModule.forRoot({ isGlobal: true }),
-            typeorm_1.TypeOrmModule.forRoot({
-                type: 'postgres',
-                host: process.env.DB_HOST ?? 'localhost',
-                port: parseInt(process.env.DB_PORT ?? '5432', 10),
-                username: process.env.DB_USER_NAME ?? 'your_username',
-                password: process.env.DB_PASSWORD ?? 'your_password',
-                database: process.env.DB_NAME ?? 'your_database',
-                autoLoadEntities: true,
-                synchronize: true,
+            typeorm_1.TypeOrmModule.forRootAsync({
+                imports: [config_1.ConfigModule],
+                inject: [config_1.ConfigService],
+                useFactory: (configService) => ({
+                    type: 'postgres',
+                    url: configService.get('DATABASE_URL'),
+                    autoLoadEntities: true,
+                    synchronize: false,
+                    ssl: {
+                        rejectUnauthorized: false,
+                    }
+                }),
             }),
             user_module_1.UserModule,
             category_module_1.CategoryModule,

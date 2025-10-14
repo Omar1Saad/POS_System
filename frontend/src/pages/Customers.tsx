@@ -35,12 +35,14 @@ import { DataGrid, GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
 import { customerService } from '@/services/customers';
 import { Customer, CreateCustomer } from '@/types';
 import { useRoleAccess } from '@/hooks/useRoleAccess';
+import { useButtonLoading } from '@/hooks/useButtonLoading';
 
 const Customers: React.FC = () => {
   // State management
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const { hasManagerAccess, hasAdminAccess, hasCashierAccess } = useRoleAccess();
+  const { isLoading, withLoading } = useButtonLoading();
   
   // Helper function to check if user can create/edit customers
   const canManageCustomers = () => hasManagerAccess() || hasCashierAccess();
@@ -57,7 +59,6 @@ const Customers: React.FC = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogMode, setDialogMode] = useState<'create' | 'edit' | 'view'>('create');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [dialogLoading, setDialogLoading] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState<CreateCustomer>({
@@ -167,16 +168,14 @@ const Customers: React.FC = () => {
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setDialogLoading(false);
     resetForm();
   };
 
   // CRUD operations
-  const handleCreateCustomer = async () => {
+  const handleCreateCustomer = withLoading('create', async () => {
     if (!validateForm()) return;
 
     try {
-      setDialogLoading(true);
       const res = await customerService.create(formData);
       if(!res.success){
         throw new Error(res.message);
@@ -186,16 +185,13 @@ const Customers: React.FC = () => {
       loadCustomers();
     } catch (error: any) {
       setError(error.message || 'Failed to create customer');
-    } finally {
-      setDialogLoading(false);
     }
-  };
+  });
 
-  const handleUpdateCustomer = async () => {
+  const handleUpdateCustomer = withLoading('update', async () => {
     if (!selectedCustomer || !validateForm()) return;
 
     try {
-      setDialogLoading(true);
       const res = await customerService.update(selectedCustomer.id, formData);
       if(!res.success){
         throw new Error(res.message);
@@ -205,12 +201,10 @@ const Customers: React.FC = () => {
       loadCustomers();
     } catch (error: any) {
       setError(error.message || 'Failed to update customer');
-    } finally {
-      setDialogLoading(false);
     }
-  };
+  });
 
-  const handleDeleteCustomer = async (customerId: number) => {
+  const handleDeleteCustomer = withLoading('delete', async (customerId: number) => {
     if (!window.confirm('Are you sure you want to delete this customer?')) return;
 
     try {
@@ -223,9 +217,9 @@ const Customers: React.FC = () => {
     } catch (error: any) {
       setError(error.message || 'Failed to delete customer');
     }
-  };
+  });
 
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = withLoading('bulkDelete', async () => {
     if (selectedRows.length === 0) return;
     
     if (!window.confirm(`Are you sure you want to delete ${selectedRows.length} customers?`)) return;
@@ -243,10 +237,10 @@ const Customers: React.FC = () => {
       const errorMessage = error.message || 'Failed to delete customers';
       setError(errorMessage.includes('customers') ? errorMessage : 'Failed to delete customers');
     }
-  };
+  });
 
   // Export customers to CSV
-  const handleExportCustomers = async () => {
+  const handleExportCustomers = withLoading('export', async () => {
     try {
       setLoading(true);
       setError('');
@@ -307,7 +301,7 @@ const Customers: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  });
 
   // DataGrid columns
   const columns: GridColDef[] = [
@@ -405,6 +399,7 @@ const Customers: React.FC = () => {
                 size="small" 
                 onClick={() => handleDeleteCustomer(params.row.id)}
                 sx={{ color: 'error.main' }}
+                disabled={isLoading('delete')}
               >
                 <DeleteIcon fontSize="small" />
               </IconButton>
@@ -493,8 +488,9 @@ const Customers: React.FC = () => {
                 color="error"
                 startIcon={<DeleteIcon />}
                 onClick={handleBulkDelete}
+                disabled={isLoading('bulkDelete')}
               >
-                Delete Selected ({selectedRows.length})
+                {isLoading('bulkDelete') ? 'Deleting...' : `Delete Selected (${selectedRows.length})`}
               </Button>
             )}
             
@@ -511,11 +507,11 @@ const Customers: React.FC = () => {
               <Tooltip title={selectedRows.length > 0 ? `Export ${selectedRows.length} selected customers to CSV` : "Export all customers to CSV file"}>
                 <Button
                   variant="outlined"
-                  startIcon={loading ? <CircularProgress size={16} /> : <ExportIcon />}
+                  startIcon={isLoading('export') ? <CircularProgress size={16} /> : <ExportIcon />}
                   onClick={handleExportCustomers}
-                  disabled={loading}
+                  disabled={isLoading('export')}
                 >
-                  {loading ? 'Exporting...' : `Export ${selectedRows.length > 0 ? `(${selectedRows.length})` : ''}`}
+                  {isLoading('export') ? 'Exporting...' : `Export ${selectedRows.length > 0 ? `(${selectedRows.length})` : ''}`}
                 </Button>
               </Tooltip>
             )}
@@ -584,7 +580,7 @@ const Customers: React.FC = () => {
               onChange={handleInputChange('fullName')}
               error={!!formErrors.fullName}
               helperText={formErrors.fullName}
-              disabled={dialogMode === 'view' || dialogLoading}
+              disabled={dialogMode === 'view' || isLoading('create') || isLoading('update')}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -603,7 +599,7 @@ const Customers: React.FC = () => {
               onChange={handleInputChange('email')}
               error={!!formErrors.email}
               helperText={formErrors.email}
-              disabled={dialogMode === 'view' || dialogLoading}
+              disabled={dialogMode === 'view' || isLoading('create') || isLoading('update')}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -621,7 +617,7 @@ const Customers: React.FC = () => {
               onChange={handleInputChange('phone')}
               error={!!formErrors.phone}
               helperText={formErrors.phone}
-              disabled={dialogMode === 'view' || dialogLoading}
+              disabled={dialogMode === 'view' || isLoading('create') || isLoading('update')}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -651,7 +647,7 @@ const Customers: React.FC = () => {
         </DialogContent>
 
         <DialogActions sx={{ p: 2.5, pt: 1 }}>
-          <Button onClick={handleCloseDialog} disabled={dialogLoading}>
+          <Button onClick={handleCloseDialog} disabled={isLoading('create') || isLoading('update')}>
             {dialogMode === 'view' ? 'Close' : 'Cancel'}
           </Button>
           
@@ -659,10 +655,10 @@ const Customers: React.FC = () => {
             <Button
               onClick={handleCreateCustomer}
               variant="contained"
-              disabled={dialogLoading}
-              startIcon={dialogLoading ? <CircularProgress size={20} /> : <AddIcon />}
+              disabled={isLoading('create')}
+              startIcon={isLoading('create') ? <CircularProgress size={20} /> : <AddIcon />}
             >
-              Create Customer
+              {isLoading('create') ? 'Creating...' : 'Create Customer'}
             </Button>
           )}
           
@@ -670,10 +666,10 @@ const Customers: React.FC = () => {
             <Button
               onClick={handleUpdateCustomer}
               variant="contained"
-              disabled={dialogLoading}
-              startIcon={dialogLoading ? <CircularProgress size={20} /> : <EditIcon />}
+              disabled={isLoading('update')}
+              startIcon={isLoading('update') ? <CircularProgress size={20} /> : <EditIcon />}
             >
-              Update Customer
+              {isLoading('update') ? 'Updating...' : 'Update Customer'}
             </Button>
           )}
         </DialogActions>

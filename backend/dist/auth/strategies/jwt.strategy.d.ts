@@ -1,7 +1,7 @@
 import { Strategy } from 'passport-jwt';
 import { UserService } from 'src/users/user.services';
 export interface JwtPayload {
-    sub: string;
+    sub: number;
     email: string;
     role: string;
 }
