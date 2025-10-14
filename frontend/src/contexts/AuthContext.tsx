@@ -70,11 +70,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               const tokenPayload = JSON.parse(atob(savedToken.split('.')[1]));
               const currentTime = Math.floor(Date.now() / 1000);
               
-              if (tokenPayload.exp && tokenPayload.exp > currentTime) {
+              // Add buffer time (5 minutes) to prevent edge cases
+              const bufferTime = 5 * 60; // 5 minutes in seconds
+              
+              if (tokenPayload.exp && (tokenPayload.exp - bufferTime) > currentTime) {
                 setToken(savedToken);
                 setUser(parsedUser);
               } else {
-                // Token expired, clear auth data
+                // Token expired or about to expire, clear auth data
                 clearAuthData();
               }
             } catch (tokenError) {
@@ -87,6 +90,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         } catch (error) {
           clearAuthData();
         }
+      } else {
+        // No saved data, ensure clean state
+        clearAuthData();
       }
       
       setLoading(false);
@@ -101,11 +107,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     try {
       const response = await authService.login({ email, password });      
-      const { access_token, user: userData } = response.data;
       
+      // Check if response is successful
       if (response.status !== 200) {
         throw new Error(response.data?.message || 'Login failed');
       }
+      
+      const { access_token, user: userData } = response.data;
       
       if (!access_token || !userData) {
         throw new Error('Invalid response from server - missing token or user data');
@@ -115,7 +123,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (!userData.id || !userData.email || !userData.role) {
         throw new Error('Invalid user data structure');
       }
-      console.log(access_token, userData);
+      
+    
+      
       // Save to localStorage
       localStorage.setItem('token', access_token);
       localStorage.setItem('user', JSON.stringify(userData));
@@ -123,9 +133,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Update state
       setToken(access_token);
       setUser(userData);
-                  
+                        
     } catch (error: any) {
-      clearAuthData();
+      console.error('Login error:', error);
+      // Only clear auth data if it's a login-specific error
+      if (error.message?.includes('Invalid email or password') || 
+          error.message?.includes('Login failed') ||
+          error.message?.includes('Invalid response')) {
+        clearAuthData();
+      }
       throw error;
     }
   };

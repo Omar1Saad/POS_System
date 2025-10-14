@@ -14,6 +14,7 @@ const auth_controller_1 = require("./auth.controller");
 const jwt_strategy_1 = require("./strategies/jwt.strategy");
 const auth_services_1 = require("./auth.services");
 const user_module_1 = require("../users/user.module");
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -23,7 +24,7 @@ exports.AuthModule = AuthModule = __decorate([
             user_module_1.UserModule,
             passport_1.PassportModule.register({ defaultStrategy: 'jwt' }),
             jwt_1.JwtModule.register({
-                secret: process.env.JWT_SECRET || 'your-secret-key',
+                secret: JWT_SECRET,
                 signOptions: {
                     expiresIn: process.env.JWT_EXPIRES_IN || '24h'
                 },

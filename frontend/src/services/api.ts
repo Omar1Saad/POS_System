@@ -16,6 +16,7 @@ api.interceptors.request.use(
     const token = localStorage.getItem('token');
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
+    } else {
     }
     return config;
   },
@@ -30,11 +31,6 @@ api.interceptors.response.use(
     return response;
   },
   (error: AxiosError) => {
-    // Handle 400 errors normally
-    if(error.response?.status === 400){
-      return error.response;
-    }
-    
     // Handle 401 Unauthorized errors
     if (error.response?.status === 401) {
       // Only redirect to auth if it's not a login/register attempt
@@ -47,16 +43,31 @@ api.interceptors.response.use(
         const user = localStorage.getItem('user');
         
         if (token && user && token !== 'missing' && user !== 'missing') {
-          // Clear auth data
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
+          // Check if this is a token validation error
+          const errorMessage = (error.response?.data as any)?.message || '';
           
-          // Only redirect if not already on auth page
-          if (!window.location.pathname.includes('/auth') && !window.location.pathname.includes('/login')) {
-            // Use a more reliable redirect method
-            setTimeout(() => {
-              window.location.reload();
-            }, 100);
+          // Only clear auth data if it's a clear authentication failure
+          if (errorMessage.includes('User not found') || 
+              errorMessage.includes('Token validation failed') ||
+              errorMessage.includes('Invalid token payload') ||
+              errorMessage.includes('jwt expired') ||
+              errorMessage.includes('jwt malformed')) {
+            
+            
+            // Clear auth data
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            
+            // Only redirect if not already on auth page
+            if (!window.location.pathname.includes('/auth') && !window.location.pathname.includes('/login')) {
+              // Use a more reliable redirect method
+              setTimeout(() => {
+                window.location.reload();
+              }, 100);
+            }
+          } else {
+            // For other 401 errors, just log them but don't clear auth data
+            console.warn('401 error but not clearing auth data:', errorMessage);
           }
         } 
       }

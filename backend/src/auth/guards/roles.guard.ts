@@ -13,11 +13,15 @@ import { UserRole } from 'src/users/entities/user.entity';
         context.getClass(),
       ]);
   
+  
       if (!requiredRoles) {
         return true;
       }
   
       const { user } = context.switchToHttp().getRequest();
-      return requiredRoles.some((role) => user?.role === role);
+      
+      const hasRequiredRole = requiredRoles.some((role) => user?.role === role);
+      
+      return hasRequiredRole;
     }
   }

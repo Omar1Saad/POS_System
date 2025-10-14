@@ -14,22 +14,40 @@ const passport_jwt_1 = require("passport-jwt");
 const passport_1 = require("@nestjs/passport");
 const common_1 = require("@nestjs/common");
 const user_services_1 = require("../../users/user.services");
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy, 'jwt') {
     usersService;
     constructor(usersService) {
         super({
             jwtFromRequest: passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
-            secretOrKey: process.env.JWT_SECRET || 'your-secret-key',
+            secretOrKey: JWT_SECRET,
         });
         this.usersService = usersService;
     }
     async validate(payload) {
-        const user = await this.usersService.getUserById(payload.sub);
-        if (!user) {
-            throw new common_1.UnauthorizedException('User not found');
+        try {
+            if (!payload.sub || !payload.email || !payload.role) {
+                console.error('Invalid token payload:', payload);
+                throw new common_1.UnauthorizedException('Invalid token payload');
+            }
+            const user = await this.usersService.getUserById(payload.sub);
+            if (!user) {
+                console.warn(`User with ID ${payload.sub} not found in database, using token payload`);
+                return {
+                    id: payload.sub,
+                    email: payload.email,
+                    role: payload.role,
+                    fullName: payload.email.split('@')[0],
+                    username: payload.email.split('@')[0],
+                };
+            }
+            return user;
         }
-        return user;
+        catch (error) {
+            console.error('JWT validation error:', error);
+            throw new common_1.UnauthorizedException('Token validation failed');
+        }
     }
 };
 exports.JwtStrategy = JwtStrategy;

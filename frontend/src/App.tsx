@@ -15,6 +15,32 @@ import Purchases from '@/pages/Purchases';
 import AuthPage from '@/pages/AuthPage';
 import ChangePasswordPage from '@/pages/ChangePasswordPage';
 
+// Component to wrap protected routes
+const ProtectedRoutes = () => (
+  <ProtectedRoute>
+    <Layout>
+      <Routes>
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route 
+          path="/users" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <Users />
+            </ProtectedRoute>
+          } 
+        />
+        <Route path="/categories" element={<Categories />} />
+        <Route path="/products" element={<Products />} />
+        <Route path="/customers" element={<Customers />} />
+        <Route path="/suppliers" element={<Suppliers />} />
+        <Route path="/sales" element={<Sales />} />
+        <Route path="/purchases" element={<Purchases />} />
+      </Routes>
+    </Layout>
+  </ProtectedRoute>
+);
+
 function App() {
   return (
     <CustomThemeProvider>
@@ -25,33 +51,7 @@ function App() {
             <Route path="/auth" element={<AuthPage />} />
             
             {/* Protected routes */}
-            <Route
-              path="/*"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Routes>
-                      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route 
-                        path="/users" 
-                        element={
-                          <ProtectedRoute requiredRole="admin">
-                            <Users />
-                          </ProtectedRoute>
-                        } 
-                      />
-                      <Route path="/categories" element={<Categories />} />
-                      <Route path="/products" element={<Products />} />
-                      <Route path="/customers" element={<Customers />} />
-                      <Route path="/suppliers" element={<Suppliers />} />
-                      <Route path="/sales" element={<Sales />} />
-                      <Route path="/purchases" element={<Purchases />} />
-                    </Routes>
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/*" element={<ProtectedRoutes />} />
             
             {/* Change password route (protected but outside layout) */}
             <Route
