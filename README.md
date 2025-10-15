@@ -248,7 +248,7 @@ pos-system/
 
 ## 🔗 روابط المشروع
 
-- [🚀 مشاهدة النسخة الحية (Live Demo)](https://your-demo-url.com) - *سيتم إضافتها قريباً*
+- [🚀 مشاهدة النسخة الحية (Live Demo)](https://pos-system-frontend-psi.vercel.app/dashboard)
 - [📄 توثيق الـ API](https://api-docs-url.com) - *سيتم إضافتها قريباً*
 - [🐛 الإبلاغ عن مشكلة](https://github.com/Omar1Saad/POS_System/issues)
 - [💡 اقتراح ميزة جديدة](https://github.com/Omar1Saad/POS_System/issues)
