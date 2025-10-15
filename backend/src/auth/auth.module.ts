@@ -5,19 +5,20 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuthService } from './auth.services';
 import { UserModule } from 'src/users/user.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
-// Ensure consistent JWT secret
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-  
+
   @Module({
     imports: [
       UserModule,
       PassportModule.register({ defaultStrategy: 'jwt' }),
-      JwtModule.register({
-        secret: JWT_SECRET,
-        signOptions: { 
-          expiresIn: process.env.JWT_EXPIRES_IN || '24h' 
-        },
+      JwtModule.registerAsync({
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: async (configService: ConfigService) => ({
+          secret: configService.get<string>('JWT_SECRET'),
+          signOptions: { expiresIn: configService.get<string>('JWT_EXPIRES_IN') },
+        }),
       }),
     ],
     controllers: [AuthController],
